@@ -1,5 +1,5 @@
-import LeofyCoin from "../../contracts/LeofyCoin.cdc"
-import FungibleToken from "../../contracts/FungibleToken.cdc"
+import LeofyCoin from "../../../contracts/LeofyCoin.cdc"
+import FungibleToken from "../../../contracts/FungibleToken.cdc"
 
 // This script returns an account's LeofyCoin balance.
 

@@ -1,4 +1,4 @@
-import LeofyCoin from "../../contracts/LeofyCoin.cdc"
+import LeofyCoin from "../../../contracts/LeofyCoin.cdc"
 
 // This script returns the total amount of LeofyCoin currently in existence.
 

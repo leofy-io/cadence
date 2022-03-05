@@ -9,11 +9,19 @@ import LeofyNFT from "../../contracts/LeofyNFT.cdc"
 transaction {
 
     prepare(signer: AuthAccount) {
+        // Return early if the account already has a collection
+        if signer.borrow<&LeofyNFT.Collection>(from: LeofyNFT.CollectionStoragePath) != nil {
+            return
+        }
 
+        // Create a new empty collection
         let collection <- LeofyNFT.createEmptyCollection()
+
+        // save it to the account
         signer.save(<-collection, to: LeofyNFT.CollectionStoragePath)
 
-        signer.link<&{LeofyNFT.LeofyCollectionPublic}>(
+        // create a public capability for the collection
+        signer.link<&{NonFungibleToken.CollectionPublic, LeofyNFT.LeofyCollectionPublic}>(
             LeofyNFT.CollectionPublicPath,
             target: LeofyNFT.CollectionStoragePath
         )
