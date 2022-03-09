@@ -1,4 +1,4 @@
-import FungibleToken from "./FungibleToken.cdc"
+import FungibleToken from "./standard/FungibleToken.cdc"
 
 pub contract LeofyCoin: FungibleToken {
     // TokensInitialized
@@ -162,13 +162,13 @@ pub contract LeofyCoin: FungibleToken {
         self.ReceiverPublicPath = /public/LeofyCoinReceiver
         self.BalancePublicPath = /public/LeofyCoinBalance
         self.AdminStoragePath = /storage/LeofyCoinAdmin
-
+    
         // Initialize contract state.
-        self.totalSupply = 0.0
+        self.totalSupply = 1000.0
 
         // Create a public capability to the Vault that only exposes
         // the deposit function through the Receiver interface
-        self.account.save(<-LeofyCoin.createEmptyVault(), to: LeofyCoin.VaultStoragePath)
+        self.account.save(<-create Vault(balance: self.totalSupply), to: LeofyCoin.VaultStoragePath)
         self.account.link<&LeofyCoin.Vault{FungibleToken.Receiver}>(
             LeofyCoin.ReceiverPublicPath,
             target: LeofyCoin.VaultStoragePath
@@ -189,3 +189,4 @@ pub contract LeofyCoin: FungibleToken {
         emit TokensInitialized(initialSupply: self.totalSupply)
     }
 }
+ 

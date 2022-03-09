@@ -5,6 +5,8 @@ import (
 	"io/ioutil"
 	"testing"
 
+	"net/http"
+
 	"github.com/onflow/cadence"
 	emulator "github.com/onflow/flow-emulator"
 	"github.com/onflow/flow-go-sdk"
@@ -12,6 +14,12 @@ import (
 	sdktemplates "github.com/onflow/flow-go-sdk/templates"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+)
+
+const (
+	NonFungibleTokenContractsBaseFile = "https://raw.githubusercontent.com/onflow/flow-nft/master/contracts/NonFungibleToken.cdc"
+	MetadataViewsContractsBaseFile    = "https://raw.githubusercontent.com/onflow/flow-nft/master/contracts/MetadataViews.cdc"
+	FungibleTokenContractsBaseFile    = "https://raw.githubusercontent.com/onflow/flow-ft/master/contracts/FungibleToken.cdc"
 )
 
 // newBlockchain returns an emulator blockchain for testing.
@@ -188,4 +196,17 @@ func assertEqual(t *testing.T, expected, actual interface{}) bool {
 	)
 
 	return assert.Fail(t, message)
+}
+
+// DownloadFile will download a url a byte slice
+func DownloadFile(url string) ([]byte, error) {
+
+	// Get the data
+	resp, err := http.Get(url)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	return ioutil.ReadAll(resp.Body)
 }

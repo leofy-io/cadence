@@ -1,11 +1,10 @@
-import NonFungibleToken from "../../contracts/NonFungibleToken.cdc"
+import NonFungibleToken from "../../contracts/standard/NonFungibleToken.cdc"
 import LeofyNFT from "../../contracts/LeofyNFT.cdc"
 
 // This transaction transfers a LeofyNFT Item from one account to another.
 
 transaction(recipient: Address, withdrawID: UInt64) {
     prepare(signer: AuthAccount) {
-        
         // get the recipients public account object
         let recipient = getAccount(recipient)
 

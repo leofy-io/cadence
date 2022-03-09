@@ -1,4 +1,4 @@
-import FungibleToken from "../../contracts/FungibleToken.cdc"
+import FungibleToken from "../../contracts/standard/FungibleToken.cdc"
 import LeofyCoin from "../../contracts/LeofyCoin.cdc"
 
 transaction(recipient: Address, amount: UFix64) {

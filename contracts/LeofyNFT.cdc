@@ -33,8 +33,10 @@
 
 */
 
-import NonFungibleToken from "./NonFungibleToken.cdc"
-import MetadataViews from "./MetadataViews.cdc"
+import NonFungibleToken from "./standard/NonFungibleToken.cdc"
+import MetadataViews from "./standard/MetadataViews.cdc"
+import FungibleToken from "./standard/FungibleToken.cdc"
+import LeofyCoin from "./LeofyCoin.cdc"
 
 pub contract LeofyNFT: NonFungibleToken {
 
@@ -51,10 +53,13 @@ pub contract LeofyNFT: NonFungibleToken {
 
     pub event Withdraw(id: UInt64, from: Address?)
     pub event Deposit(id: UInt64, to: Address?)
-    pub event Minted(id: UInt64)
+    pub event Minted(id: UInt64, itemID: UInt64, serialNumber: UInt32)
 
     // Named Paths
     //
+    pub let ItemStoragePath: StoragePath
+    pub let ItemPublicPath: PublicPath
+
     pub let CollectionStoragePath: StoragePath
     pub let CollectionPublicPath: PublicPath
     pub let AdminStoragePath: StoragePath
@@ -65,7 +70,7 @@ pub contract LeofyNFT: NonFungibleToken {
     // -----------------------------------------------------------------------
 
     // Variable size dictionary of Item structs
-    access(self) var items: @{UInt64: Item}
+    //access(self) var items: @{UInt64: Item}
 
     pub var totalSupply: UInt64
     pub var totalItemSupply: UInt64
@@ -86,7 +91,96 @@ pub contract LeofyNFT: NonFungibleToken {
     // Leofy NFTs will all reference a single item as the owner of
     // its metadata. 
     //
-    pub resource Item {
+
+    pub resource interface ItemCollectionPublic {
+        pub fun getIDs(): [UInt64]
+        pub fun getItemsLength(): Int
+        pub fun getItemMetaDataByField(itemID: UInt64, field: String): String?
+        pub fun borrowItem(itemID: UInt64): &Item{ItemPublic}
+    }
+
+    pub resource ItemCollection: ItemCollectionPublic {
+        pub var items: @{UInt64: LeofyNFT.Item}
+
+        init () {
+            self.items <- {}
+        }
+
+        pub fun createItem(metadata: {String: String}, price: UFix64): UInt64 {
+
+            // Create the new Play
+            var newItem <- create Item(
+               metadata: metadata,
+               price: price
+            )
+            
+            let newID = newItem.itemID
+
+            // Store it in the contract storage
+            self.items[newID] <-! newItem
+            emit ItemCreated(id: LeofyNFT.totalItemSupply, metadata:metadata)
+
+            // Increment the ID so that it isn't used again
+            LeofyNFT.totalItemSupply = LeofyNFT.totalItemSupply + 1
+
+            return newID            
+        }
+
+        pub fun borrowItem(itemID: UInt64): &Item{ItemPublic} {
+            pre {
+                self.items[itemID] != nil: "Cannot borrow Item: The Item doesn't exist"
+            }
+
+            return &self.items[itemID] as &Item{ItemPublic};
+        }
+
+        // getIDs returns an array of the IDs that are in the Item Collection
+        pub fun getIDs(): [UInt64] {
+            return self.items.keys
+        }
+
+        // getItemsLength 
+        // Returns: Int length of items created
+        pub fun getItemsLength(): Int {
+            return self.items.length
+        }
+
+        // getItemMetaDataByField returns the metadata associated with a 
+        //                        specific field of the metadata
+        //                        Ex: field: "Artist" will return something
+        //                        like "John Doe"
+        // 
+        // Parameters: itemID: The id of the Item that is being searched
+        //             field: The field to search for
+        //
+        // Returns: The metadata field as a String Optional
+        pub fun getItemMetaDataByField(itemID: UInt64, field: String): String? {
+            // Don't force a revert if the itemID or field is invalid
+            if( self.items[itemID] != nil){
+            let item = &self.items[itemID] as &Item
+            return item.metadata[field]
+            }
+            else{
+                return nil;
+            }
+        }
+        
+        destroy(){
+            destroy self.items
+        }
+    }
+
+    pub resource interface ItemPublic{
+        pub let itemID: UInt64
+        pub let metadata: {String: String}
+        pub var numberMinted: UInt32
+        pub var price: UFix64
+
+        pub fun borrowCollection(): &LeofyNFT.Collection{LeofyCollectionPublic}
+        pub fun purchase(payment: @FungibleToken.Vault): @NonFungibleToken.NFT
+    }
+
+    pub resource Item: ItemPublic {
 
         // The unique ID for the Item
         pub let itemID: UInt64
@@ -97,20 +191,24 @@ pub contract LeofyNFT: NonFungibleToken {
         //
         pub let metadata: {String: String}
 
-        access(contract) var numberMinted: UInt32
+        pub var numberMinted: UInt32
 
-        init(metadata: {String: String}) {
+        pub var NFTsCollection: @LeofyNFT.Collection
+
+        pub var price: UFix64
+
+        init(metadata: {String: String}, price: UFix64) {
             pre {
                 metadata.length != 0: "New Item metadata cannot be empty"
             }
             self.itemID = LeofyNFT.totalItemSupply
             self.metadata = metadata
+            self.price = price
             self.numberMinted = 0
+            self.NFTsCollection <- create Collection()
         }
 
-        pub fun mintNFT(
-            recipient: &{NonFungibleToken.CollectionPublic}
-        ) {
+        pub fun mintNFT() {
             // create a new NFT
             var newNFT <- create NFT(
                 id: LeofyNFT.totalSupply,
@@ -119,23 +217,41 @@ pub contract LeofyNFT: NonFungibleToken {
             )
 
             // deposit it in the recipient's account using their reference
-            recipient.deposit(token: <-newNFT)
+            self.NFTsCollection.deposit(token: <-newNFT)
 
-            emit Minted(id: LeofyNFT.totalSupply)
+            emit Minted(id: LeofyNFT.totalSupply, itemID: self.itemID, serialNumber: self.numberMinted + 1)
 
             self.numberMinted =  self.numberMinted + 1
             LeofyNFT.totalSupply = LeofyNFT.totalSupply + 1
         }
 
-        pub fun batchMintNFT(
-            recipient: &{NonFungibleToken.CollectionPublic},
-            quantity: UInt64
-        ){
+        pub fun batchMintNFT(quantity: UInt64){
             var i: UInt64 = 0
             while i < quantity {
-                self.mintNFT(recipient: recipient)
+                self.mintNFT()
                 i = i + 1;
             }
+        }
+
+        pub fun borrowCollection(): &LeofyNFT.Collection{LeofyCollectionPublic} {
+            return &self.NFTsCollection as &Collection{LeofyCollectionPublic}
+        }
+
+        pub fun purchase(payment: @FungibleToken.Vault): @NonFungibleToken.NFT {
+            pre {
+                self.NFTsCollection.getIDs().length > 0: "listing has already been purchased"
+                payment.isInstance(Type<@LeofyCoin.Vault>()): "payment vault is not requested fungible token"
+                payment.balance == self.price: "payment vault does not contain requested price"
+            }
+
+            let nft <- self.NFTsCollection.withdraw(withdrawID: self.NFTsCollection.getIDs()[0])
+            let vault = LeofyNFT.getLeofyCoinVault()
+            vault.deposit(from: <- payment)
+            return <- nft
+        }
+
+        destroy() {
+            destroy self.NFTsCollection
         }
     }
 
@@ -183,10 +299,11 @@ pub contract LeofyNFT: NonFungibleToken {
         }
 
         pub fun description(): String {
+            let itemCollection = LeofyNFT.getItemCollectionPublic()
             return "NFT: '"
-                .concat(LeofyNFT.getItemMetaDataByField(itemID: self.itemID, field: "name") ?? "''")
+                .concat(itemCollection.getItemMetaDataByField(itemID: self.itemID, field: "name") ?? "''")
                 .concat("' from Author: '")
-                .concat(LeofyNFT.getItemMetaDataByField(itemID: self.itemID, field: "author") ?? "''")
+                .concat(itemCollection.getItemMetaDataByField(itemID: self.itemID, field: "author") ?? "''")
                 .concat("' with serial number ")
                 .concat(self.serialNumber.toString())
         }
@@ -199,19 +316,20 @@ pub contract LeofyNFT: NonFungibleToken {
         }
 
         pub fun resolveView(_ view: Type): AnyStruct? {
+            let itemCollection = LeofyNFT.getItemCollectionPublic()
             switch view {
                 case Type<MetadataViews.Display>():
                     return MetadataViews.Display(
-                        name: LeofyNFT.getItemMetaDataByField(itemID: self.itemID, field: "name") ?? "",
+                        name: itemCollection.getItemMetaDataByField(itemID: self.itemID, field: "name") ?? "",
                         description: self.description(),
-                        thumbnail: MetadataViews.HTTPFile(LeofyNFT.getItemMetaDataByField(itemID: self.itemID, field: "thumbnail") ?? "")
+                        thumbnail: MetadataViews.HTTPFile(itemCollection.getItemMetaDataByField(itemID: self.itemID, field: "thumbnail") ?? "")
                     )
                 case Type<LeofyNFTMetadataView>():
                     return LeofyNFTMetadataView(
-                        author: LeofyNFT.getItemMetaDataByField(itemID: self.itemID, field: "author") ?? "", 
-                        name: LeofyNFT.getItemMetaDataByField(itemID: self.itemID, field: "name") ?? "",
+                        author: itemCollection.getItemMetaDataByField(itemID: self.itemID, field: "author") ?? "", 
+                        name: itemCollection.getItemMetaDataByField(itemID: self.itemID, field: "name") ?? "",
                         description: self.description(),
-                        thumbnail: MetadataViews.HTTPFile(LeofyNFT.getItemMetaDataByField(itemID: self.itemID, field: "thumbnail") ?? ""),
+                        thumbnail: MetadataViews.HTTPFile(itemCollection.getItemMetaDataByField(itemID: self.itemID, field: "thumbnail") ?? ""),
                         itemID: self.itemID,
                         serialNumber: self.serialNumber
                     )
@@ -244,7 +362,7 @@ pub contract LeofyNFT: NonFungibleToken {
 
         // withdraw removes an NFT from the collection and moves it to the caller
         pub fun withdraw(withdrawID: UInt64): @NonFungibleToken.NFT {
-            let token <- self.ownedNFTs.remove(key: withdrawID) ?? panic("missing NFT")
+            let token <- self.ownedNFTs.remove(key: withdrawID) ?? panic("missing NFT: ".concat(withdrawID.toString()))
 
             emit Withdraw(id: token.id, from: self.owner?.address)
 
@@ -289,46 +407,11 @@ pub contract LeofyNFT: NonFungibleToken {
 
         pub fun borrowViewResolver(id: UInt64): &AnyResource{MetadataViews.Resolver} {
             let nft = &self.ownedNFTs[id] as auth &NonFungibleToken.NFT
-            let LeofyNFT = nft as! &LeofyNFT.NFT
-            return LeofyNFT as &AnyResource{MetadataViews.Resolver}
+            return nft as! &LeofyNFT.NFT
         }
 
         destroy() {
             destroy self.ownedNFTs
-        }
-    }
-
-    // Resource that an admin or something similar would own to be
-    // able to mint new NFTs
-    //
-    pub resource Admin {
-
-        pub fun createItem(metadata: {String: String}): UInt64 {
-
-            // Create the new Play
-            var newItem <- create Item(
-               metadata: metadata
-            )
-            
-            let newID = newItem.itemID
-
-            // Store it in the contract storage
-            LeofyNFT.items[newID] <-! newItem
-            emit ItemCreated(id: LeofyNFT.totalItemSupply, metadata:metadata)
-
-            // Increment the ID so that it isn't used again
-            LeofyNFT.totalItemSupply = LeofyNFT.totalItemSupply + UInt64(1)
-
-            return newID            
-        }
-
-        pub fun borrowItem(itemID: UInt64): &Item {
-            pre {
-                LeofyNFT.items[itemID] != nil: "Cannot borrow Item: The Item doesn't exist"
-            }
-
-             return &LeofyNFT.items[itemID] as &Item;
-
         }
     }
 
@@ -337,41 +420,29 @@ pub contract LeofyNFT: NonFungibleToken {
     // -----------------------------------------------------------------------
 
     // public function that anyone can call to create a new empty collection
-    pub fun createEmptyCollection(): @NonFungibleToken.Collection {
+    pub fun createEmptyCollection(): @LeofyNFT.Collection {
         return <- create Collection()
     }
 
-    // getItemsLength 
-    // Returns: Int length of items created
-    pub fun getItemsLength(): Int {
-        return LeofyNFT.items.length
+    pub fun getItemCollectionPublic(): &AnyResource{LeofyNFT.ItemCollectionPublic} {
+        return self.account.getCapability(LeofyNFT.ItemPublicPath)
+        .borrow<&{LeofyNFT.ItemCollectionPublic}>()
+        ?? panic("Could not borrow capability from public Item Collection")
     }
 
-    // getItemMetaDataByField returns the metadata associated with a 
-    //                        specific field of the metadata
-    //                        Ex: field: "Artist" will return something
-    //                        like "John Doe"
-    // 
-    // Parameters: itemID: The id of the Item that is being searched
-    //             field: The field to search for
-    //
-    // Returns: The metadata field as a String Optional
-    pub fun getItemMetaDataByField(itemID: UInt64, field: String): String? {
-        // Don't force a revert if the itemID or field is invalid
-        if( LeofyNFT.items[itemID] != nil){
-           let item = &LeofyNFT.items[itemID] as &Item
-           return item.metadata[field]
-        }
-        else{
-            return nil;
-        }
-    }
+    pub fun getLeofyCoinVault(): &LeofyCoin.Vault {
+        return self.account.borrow<&LeofyCoin.Vault>(from: LeofyCoin.VaultStoragePath)
+			?? panic("Could not borrow reference to the owner's Vault!")
+    } 
 
     // -----------------------------------------------------------------------
     // LeofyNFT initialization function
     // -----------------------------------------------------------------------
 
     init() {
+        self.ItemStoragePath = /storage/LeofyItemCollection
+        self.ItemPublicPath = /public/LeofyItemCollection
+
         self.CollectionStoragePath = /storage/LeofyNFTCollection
         self.CollectionPublicPath = /public/LeofyNFTCollection
         self.AdminStoragePath = /storage/LeofyNFTMinter
@@ -380,21 +451,26 @@ pub contract LeofyNFT: NonFungibleToken {
         self.totalSupply = 0
         self.totalItemSupply = 0
 
-        self.items <- {}
+        destroy self.account.load<@ItemCollection>(from: self.ItemStoragePath)
+        // create a public capability for the Item collection
+        self.account.save(<-create ItemCollection(), to: self.ItemStoragePath)
+        self.account.link<&LeofyNFT.ItemCollection{LeofyNFT.ItemCollectionPublic}>(
+            self.ItemPublicPath,
+            target: self.ItemStoragePath
+        )
 
         // Create a Collection resource and save it to storage
+        destroy self.account.load<@Collection>(from: self.CollectionStoragePath)
+
         let collection <- create Collection()
-        self.account.save(<-collection, to: /storage/LeofyNFTCollection)
+        self.account.save(<-collection, to: self.CollectionStoragePath)
 
         // create a public capability for the collection
         self.account.link<&LeofyNFT.Collection{NonFungibleToken.CollectionPublic, LeofyNFT.LeofyCollectionPublic}>(
             self.CollectionPublicPath,
             target: self.CollectionStoragePath
         )
-
-        // Create a Minter resource and save it to storage
-        self.account.save(<-create Admin(), to: self.AdminStoragePath)
-
+        
         emit ContractInitialized()
     }
 }

@@ -1,6 +1,5 @@
 .PHONY: test
 test:
-	$(MAKE) test -C contracts
 	$(MAKE) test -C test
 
 .PHONY: generate

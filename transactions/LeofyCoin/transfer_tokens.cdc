@@ -1,4 +1,4 @@
-import FungibleToken from "../../contracts/FungibleToken.cdc"
+import FungibleToken from "../../contracts/standard/FungibleToken.cdc"
 import LeofyCoin from "../../contracts/LeofyCoin.cdc"
 
 // This transaction is a template for a transaction that
@@ -8,7 +8,7 @@ import LeofyCoin from "../../contracts/LeofyCoin.cdc"
 // The withdraw amount and the account from getAccount
 // would be the parameters to the transaction
 
-transaction(to: Address, amount: UFix64) {
+transaction(amount: UFix64, to: Address) {
 
     // The Vault resource that holds the tokens that are being transferred
     let sentVault: @FungibleToken.Vault
@@ -16,7 +16,7 @@ transaction(to: Address, amount: UFix64) {
     prepare(signer: AuthAccount) {
 
         // Get a reference to the signer's stored vault
-        let vaultRef = signer.borrow<&LeofyCoin.Vault>(from: LeofyCoin.VaultStoragePath)
+        let vaultRef = signer.borrow<&FungibleToken.Vault>(from: LeofyCoin.VaultStoragePath)
 			?? panic("Could not borrow reference to the owner's Vault!")
 
         // Withdraw tokens from the signer's stored vault

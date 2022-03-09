@@ -1,6 +1,5 @@
 import LeofyNFT from "../../../contracts/LeofyNFT.cdc"
-import MetadataViews from "../../../contracts/MetadataViews.cdc"
-
+import MetadataViews from "../../../contracts/standard/MetadataViews.cdc"
 
 pub fun main(address: Address, id: UInt64): LeofyNFT.LeofyNFTMetadataView {
     let account = getAccount(address)

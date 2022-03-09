@@ -1,4 +1,4 @@
-import NonFungibleToken from "../../../contracts/NonFungibleToken.cdc"
+import NonFungibleToken from "../../../contracts/standard/NonFungibleToken.cdc"
 import LeofyNFT from "../../../contracts/LeofyNFT.cdc"
 
 // This script borrows an NFT from a collection

@@ -1,4 +1,4 @@
-import NonFungibleToken from "../../contracts/NonFungibleToken.cdc"
+import NonFungibleToken from "../../contracts/standard/NonFungibleToken.cdc"
 import LeofyNFT from "../../contracts/LeofyNFT.cdc"
 
 // This transaction is a template for a transaction
