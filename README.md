@@ -31,13 +31,13 @@ Resource-oriented programming, and by extension Cadence,
 is the perfect programming environment for Non-Fungible Tokens (NFTs), because users are able
 to store their NFT objects directly in their accounts and transact
 peer-to-peer. Please see the [blog post about resources](https://medium.com/dapperlabs/resource-oriented-programming-bee4d69c8f8e)
-to understand why they are perfect for digital assets like Leofy, NBA Top Shot Moments or anothers recetly daps on the market. 
+to understand why they are perfect for digital assets like LeofyNFTs or NBA Top Shot Moments or anothers recetly daps on the market. 
 
 ### Contributing
 
 If you see an issue with the code for the contracts, the transactions, scripts, documentation, or anything else, please do not hesitate to make an issue or a pull request with your desired changes. This is an open source project and we welcome all assistance from the community!
 
-## Top Shot Contract Addresses
+## LeofyNFT Contract Addresses
 
 `LeofyNFT.cdc`: This is the main Leofy smart contract that defines
 the core functionality of the NFT.
@@ -135,45 +135,9 @@ in their account storage via their `Collection` object. The collection object
 contains a dictionary that stores the LeofyNFT and gives utility functions
 to move them in and out and to read data about the collection and its LeofyNFT.
 
-## How to Deploy and Test the Top Shot Contract in VSCode
 
-The first step for using any smart contract is deploying it to the blockchain,
-or emulator in our case. Do these commands in vscode. 
-See the [vscode extension instructions](https://docs.onflow.org/vscode-extension/) 
-to learn how to use it.
-
- 1. Start the emulator with the `Run emulator` vscode command.
- 2. Open the `NonFungibleToken.cdc` file from the [flow-nft repo](https://github.com/onflow/flow-nft/blob/master/contracts/NonFungibleToken.cdc) and the `TopShot.cdc` file.  Feel free to read as much as you want to familiarize yourself with the contracts.
- 3. In `NonFungibleToken.cdc`, click the `deploy contract to account` 
- above the `Dummy` contract at the bottom of the file to deploy it.
- This also deploys the `NonFungbleToken` interface.
- 4. In `TopShot.cdc`, make sure it imports `NonFungibleToken` from the account you deployed it to.
- 5. Click the `deploy contract to account` button that appears over the 
-    `TopShot` contract declaration to deploy it to a new account.
-
-This deploys the contract code. It also runs the contract's
-`init` function, which initializes the contract storage variables,
-stores the `Collection` and `Admin` resources 
-in account storage, and creates links to the `Collection`.
-
-As you can see, whenever we want to call a function, read a field,
-or use a type that is defined in a smart contract, we simply import
-that contract from the address it is defined in and then use the imported
-contract to access those type definitions and fields.
-
-After the contracts have been deployed, you can run the sample transactions
-to interact with the contracts. The sample transactions are meant to be used
-in an automated context, so they use transaction arguments and string template
-fields. These make it easier for a program to use and interact with them.
-If you are running these transactions manually in the Flow Playground or
-vscode extension, you will need to remove the transaction arguments and
-hard code the values that they are used for. 
-
-You also need to replace the `ADDRESS` placeholders with the actual Flow 
-addresses that you want to import from.
-
-## How to Run Transactions Against the Top Shot Contract
-This repository contains sample transactions that can be executed against the Top Shot contract either via Flow CLI or using VSCode. This section will describe how to create a new Top Shot set on the Flow emulator.
+## How to Run Transactions Against the Leofy Contracts
+This repository contains sample transactions that can be executed against the TopShot contract either via Flow CLI or using VSCode. This section will describe how to create setup a public Collection  on the Flow emulator.
 
 #### Send Transaction with Flow CLI
 1. Install the [Flow CLI and emulator](https://docs.onflow.org/flow-cli/install/)
