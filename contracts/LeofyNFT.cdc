@@ -108,7 +108,7 @@ pub contract LeofyNFT: NonFungibleToken {
 
         pub fun createItem(metadata: {String: String}, price: UFix64): UInt64 {
 
-            // Create the new Play
+            // Create the new Item
             var newItem <- create Item(
                metadata: metadata,
                price: price
@@ -231,6 +231,10 @@ pub contract LeofyNFT: NonFungibleToken {
                 self.mintNFT()
                 i = i + 1;
             }
+        }
+
+        pub fun setPrice(price: UFix64) {
+            self.price = price
         }
 
         pub fun borrowCollection(): &LeofyNFT.Collection{LeofyCollectionPublic} {

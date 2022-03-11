@@ -50,15 +50,32 @@ func TestMintNFTs(t *testing.T) {
 	itemName := cadence.String("John Doe FirstArt")
 	itemThumbnail := cadence.String("https://leofy.io/leofy-logo-y-2.svg")
 
-	t.Run("Should be able to create a new Item", func(t *testing.T) {
-		CreateItemTransaction(t, b, nftAddress, LeofyNFTAddress, LeofyNFTSigner, itemAuthor, itemName, itemThumbnail, CadenceUFix64("50.00"), false)
-
+	t.Run("Should be able to create a new Item and change their price", func(t *testing.T) {
 		script := templates.GenerateGetTotalItemsScript(nftAddress, LeofyNFTAddress)
 		supply := executeScriptAndCheck(t, b, script, nil)
+		assert.Equal(t, cadence.NewUInt64(0), supply)
+
+		CreateItemTransaction(t, b, nftAddress, LeofyNFTAddress, LeofyNFTSigner, itemAuthor, itemName, itemThumbnail, CadenceUFix64("30.00"), false)
+
+		script = templates.GenerateGetTotalItemsScript(nftAddress, LeofyNFTAddress)
+		supply = executeScriptAndCheck(t, b, script, nil)
 		assert.Equal(t, cadence.NewUInt64(1), supply)
 
 		itemLength := executeScriptAndCheck(t, b, templates.GenerateGetItemsLengthScript(nftAddress, LeofyNFTAddress), nil)
 		assert.Equal(t, cadence.NewInt(1), itemLength)
+
+		itemPrice := executeScriptAndCheck(t, b, templates.GenerateGetItemsPrice(nftAddress, LeofyNFTAddress), [][]byte{
+			jsoncdc.MustEncode(cadence.NewUInt64(0)),
+		})
+		assert.Equal(t, CadenceUFix64("30.00"), itemPrice)
+
+		changeItemPriceTransaction(t, b, nftAddress, LeofyNFTAddress, LeofyNFTSigner, 0, CadenceUFix64("50.00"), false)
+
+		itemPrice = executeScriptAndCheck(t, b, templates.GenerateGetItemsPrice(nftAddress, LeofyNFTAddress), [][]byte{
+			jsoncdc.MustEncode(cadence.NewUInt64(0)),
+		})
+		assert.Equal(t, CadenceUFix64("50.00"), itemPrice)
+
 	})
 
 	t.Run("Should be able to mint a token", func(t *testing.T) {

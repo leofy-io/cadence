@@ -11,9 +11,9 @@ import (
 const (
 	filenameSetupAccount = "LeofyNFT/setup_account.cdc"
 
-	filenameGenerateItem = "LeofyNFT/create_item.cdc"
+	filenameGenerateItem    = "LeofyNFT/create_item.cdc"
+	filenameChangeItemPrice = "LeofyNFT/change_item_price.cdc"
 
-	filenameGenerateSet        = "LeofyNFT/create_set.cdc"
 	filenameBatchMintNFT       = "LeofyNFT/batch_mint_nft.cdc"
 	filenameMintNFT            = "LeofyNFT/mint_nft.cdc"
 	filenameTransferNFTAccount = "LeofyNFT/transfer_nft_account.cdc"
@@ -27,8 +27,7 @@ const (
 	filenameItemsTotal  = "LeofyNFT/scripts/get_items_supply.cdc"
 	filenameItemsLength = "LeofyNFT/scripts/get_items_length.cdc"
 
-	filenameGetSetName      = "LeofyNFT/scripts/get_set_name.cdc"
-	filenameGetSetIdsByName = "LeofyNFT/scripts/get_set_ids_by_name.cdc"
+	filenameItemPrice = "LeofyNFT/scripts/get_item_price.cdc"
 
 	filenameBorrowNFTAccount = "LeofyNFT/scripts/borrow_nft_account.cdc"
 	filenameBorrowNFTItem    = "LeofyNFT/scripts/borrow_nft_item.cdc"
@@ -51,13 +50,9 @@ func GenerateItemTransaction(nftAddress, LeofyNFTAddress flow.Address) []byte {
 	return replaceAddressesLeofyNFT(code, nftAddress, LeofyNFTAddress, flow.EmptyAddress)
 }
 
-// -----------------------------------------------------------------------
-// Set Transactions
-// -----------------------------------------------------------------------
-
-// GenerateMintSetTransaction creates a script that instantiates a new set.
-func GenerateMintSetTransaction(nftAddress, LeofyNFTAddress flow.Address) []byte {
-	code := assets.MustAssetString(filenameGenerateSet)
+// GenerateChangeItemPriceTransaction creates a script that instantiates a new item and change their price.
+func GenerateChangeItemPriceTransaction(nftAddress, LeofyNFTAddress flow.Address) []byte {
+	code := assets.MustAssetString(filenameChangeItemPrice)
 	return replaceAddressesLeofyNFT(code, nftAddress, LeofyNFTAddress, flow.EmptyAddress)
 }
 
@@ -131,16 +126,9 @@ func GenerateGetItemsLengthScript(nftAddress, LeofyNFTAddress flow.Address) []by
 	return replaceAddressesLeofyNFT(code, nftAddress, LeofyNFTAddress, flow.EmptyAddress)
 }
 
-func GenerateGetSetNameScript(nftAddress, LeofyNFTAddress flow.Address) []byte {
-	code := assets.MustAssetString(filenameGetSetName)
+func GenerateGetItemsPrice(nftAddress, LeofyNFTAddress flow.Address) []byte {
+	code := assets.MustAssetString(filenameItemPrice)
 	return replaceAddressesLeofyNFT(code, nftAddress, LeofyNFTAddress, flow.EmptyAddress)
-}
-
-func GenerateGetSetIDsByNameScript(nftAddress flow.Address, LeofyNFTAddress flow.Address, fungibleAddr flow.Address, tokenAddr flow.Address) []byte {
-	code := assets.MustAssetString(filenameGetSetIdsByName)
-	return replaceAddressesLeofyNFT(code, nftAddress, LeofyNFTAddress, flow.EmptyAddress)
-	//return replaceAddressesLeofyCoin(code, fungibleAddr, tokenAddr)
-
 }
 
 // -----------------------------------------------------------------------

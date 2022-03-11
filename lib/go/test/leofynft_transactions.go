@@ -8,7 +8,6 @@ import (
 	"github.com/onflow/flow-go-sdk"
 	"github.com/onflow/flow-go-sdk/crypto"
 	"github.com/onflow/flow-nft/lib/go/templates"
-	"github.com/stretchr/testify/assert"
 )
 
 func CreateItemTransaction(
@@ -23,11 +22,7 @@ func CreateItemTransaction(
 	price cadence.Value,
 	shouldThrowError bool,
 ) {
-	script := templates.GenerateGetTotalItemsScript(nftAddress, LeofyNFTAddress)
-	supply := executeScriptAndCheck(t, b, script, nil)
-	assert.Equal(t, cadence.NewUInt64(0), supply)
-
-	script = templates.GenerateItemTransaction(nftAddress, LeofyNFTAddress)
+	script := templates.GenerateItemTransaction(nftAddress, LeofyNFTAddress)
 	tx := createTxWithTemplateAndAuthorizer(b, script, LeofyNFTAddress)
 
 	metadata := []cadence.KeyValuePair{
@@ -37,6 +32,36 @@ func CreateItemTransaction(
 	}
 
 	tx.AddArgument(cadence.NewDictionary(metadata))
+	tx.AddArgument(price)
+
+	signAndSubmit(
+		t, b, tx,
+		[]flow.Address{
+			b.ServiceKey().Address,
+			LeofyNFTAddress,
+		},
+		[]crypto.Signer{
+			b.ServiceKey().Signer(),
+			transactionSigner,
+		},
+		shouldThrowError,
+	)
+}
+
+func changeItemPriceTransaction(
+	t *testing.T,
+	b *emulator.Blockchain,
+	nftAddress flow.Address,
+	LeofyNFTAddress flow.Address,
+	transactionSigner crypto.Signer,
+	itemID uint64,
+	price cadence.Value,
+	shouldThrowError bool,
+) {
+	script := templates.GenerateChangeItemPriceTransaction(nftAddress, LeofyNFTAddress)
+	tx := createTxWithTemplateAndAuthorizer(b, script, LeofyNFTAddress)
+
+	tx.AddArgument(cadence.NewUInt64(itemID))
 	tx.AddArgument(price)
 
 	signAndSubmit(

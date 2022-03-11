@@ -119,8 +119,8 @@ The other types that are defined in `LeofyNFT` are as follows:
 Metadata structs associated with Items are stored in the main smart contract
 and can be queried by anyone. 
 
-For example, If players wanted to find out the 
-author of the Item that the player has on their Collection, they 
+For example, If users wanted to find out the 
+author of the Item that the user has on their Collection, they 
 would call a public function in the `Leofy` smart contract 
 called `getItemMetaDataByField` inside the `Item` resource.
 
@@ -137,7 +137,7 @@ to move them in and out and to read data about the collection and its LeofyNFT.
 
 
 ## How to Run Transactions Against the Leofy Contracts
-This repository contains sample transactions that can be executed against the TopShot contract either via Flow CLI or using VSCode. This section will describe how to create setup a public Collection  on the Flow emulator.
+This repository contains sample transactions that can be executed against the Leofy contract either via Flow CLI or using VSCode. This section will describe how to create setup a public Collection  on the Flow emulator.
 
 #### Send Transaction with Flow CLI
 1. Install the [Flow CLI and emulator](https://docs.onflow.org/flow-cli/install/)
@@ -146,7 +146,7 @@ This repository contains sample transactions that can be executed against the To
 3. [Configure the contracts & deployment section](https://docs.onflow.org/flow-cli/configuration/) of the initialized flow.json file. 
 4. Start the emulator.  
 `flow emulator`
-5. Deploy the NonFungibleToken & TopShot contracts to the flow emulator.  
+5. Deploy the NonFungibleToken, FungibleToken, MetadataViews & Leofy contracts to the flow emulator.  
 `flow project deploy --network=emulator`
 6. Use the Flow CLI to execute transactions against the emulator. This transaction creates a new set on the flow emulator called "new set name".   
 `flow transactions send ./transactions/LeofyNFT/setup_account.cdc"`
@@ -186,7 +186,7 @@ can be read from the real LeofyCoin contract deployed.
 
 ### Leofy NFT Metadata
 
-NFT metadata is represented in a flexible and modular way using the [standard proposed in FLIP-0636](https://github.com/onflow/flow/blob/master/flips/20210916-nft-metadata.md). The LeofyNFT contract implements the [`MetadataViews.Resolver`](https://github.com/onflow/flow-nft/blob/master/contracts/MetadataViews.cdc#L21) interface, which standardizes the display of LeofyNFT in accordance with FLIP-0636. The LeofyNFT contract also defines a custom view of moment play data called TopShotMomentMetadataView.
+NFT metadata is represented in a flexible and modular way using the [standard proposed in FLIP-0636](https://github.com/onflow/flow/blob/master/flips/20210916-nft-metadata.md). The LeofyNFT contract implements the [`MetadataViews.Resolver`](https://github.com/onflow/flow-nft/blob/master/contracts/MetadataViews.cdc#L21) interface, which standardizes the display of LeofyNFT in accordance with FLIP-0636. The LeofyNFT contract also defines a custom view of moment Item data called LeofyNFTMetadataView.
 
 
 ## Leofy Marketplace

@@ -1,5 +1,5 @@
 import LeofyNFT from "../../../contracts/LeofyNFT.cdc"
-import MetadataViews from "../../../contracts/MetadataViews.cdc"
+import MetadataViews from "../../../contracts/standard/MetadataViews.cdc"
 
 pub struct NFT {
     pub let name: String
