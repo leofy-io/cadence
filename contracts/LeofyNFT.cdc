@@ -23,8 +23,8 @@
     every Leofy NFT owner will store in their account
     to manage their NFT collection.
 
-    The main Leofy account will also have its own Moment collections
-    it can use to hold its own moments that have not yet been sent to a user.
+    The main Leofy account will also have its own NFT's collections
+    it can use to hold its own NFT's that have not yet been sent to a user.
 
     Note: All state changing functions will panic if an invalid argument is
     provided or one of its pre-conditions or post conditions aren't met.
