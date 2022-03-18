@@ -172,7 +172,6 @@ pub contract LeofyNFT: NonFungibleToken {
 
     pub resource interface ItemPublic{
         pub let itemID: UInt64
-        pub let metadata: {String: String}
         pub var numberMinted: UInt32
         pub var price: UFix64
 
@@ -189,7 +188,7 @@ pub contract LeofyNFT: NonFungibleToken {
         // This is not the long term way NFT metadata will be stored. It's a temporary
         // construct while we figure out a better way to do metadata.
         //
-        pub let metadata: {String: String}
+        access(contract) let metadata: {String: String}
 
         pub var numberMinted: UInt32
 
