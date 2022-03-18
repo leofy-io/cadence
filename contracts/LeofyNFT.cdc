@@ -251,6 +251,7 @@ pub contract LeofyNFT: NonFungibleToken {
             let nft <- self.NFTsCollection.withdraw(withdrawID: self.NFTsCollection.getIDs()[0])
             let vault = LeofyNFT.getLeofyCoinVault()
             vault.deposit(from: <- payment)
+            
             return <- nft
         }
 
@@ -434,9 +435,9 @@ pub contract LeofyNFT: NonFungibleToken {
         ?? panic("Could not borrow capability from public Item Collection")
     }
 
-    pub fun getLeofyCoinVault(): &LeofyCoin.Vault {
-        return self.account.borrow<&LeofyCoin.Vault>(from: LeofyCoin.VaultStoragePath)
-			?? panic("Could not borrow reference to the owner's Vault!")
+    pub fun getLeofyCoinVault(): &AnyResource{FungibleToken.Receiver} {
+        return self.account.getCapability(LeofyCoin.ReceiverPublicPath)!.borrow<&{FungibleToken.Receiver}>()
+			?? panic("Could not borrow receiver reference to the recipient's Vault")
     } 
 
     // -----------------------------------------------------------------------
