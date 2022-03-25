@@ -175,6 +175,7 @@ pub contract LeofyNFT: NonFungibleToken {
         pub var numberMinted: UInt32
         pub var price: UFix64
 
+        pub fun getMetadata(): {String: String}
         pub fun borrowCollection(): &LeofyNFT.Collection{LeofyCollectionPublic}
         pub fun purchase(payment: @FungibleToken.Vault): @NonFungibleToken.NFT
     }
@@ -222,6 +223,10 @@ pub contract LeofyNFT: NonFungibleToken {
 
             self.numberMinted =  self.numberMinted + 1
             LeofyNFT.totalSupply = LeofyNFT.totalSupply + 1
+        }
+
+        pub fun getMetadata(): {String: String} {
+            return self.metadata
         }
 
         pub fun batchMintNFT(quantity: UInt64){

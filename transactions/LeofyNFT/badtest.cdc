@@ -6,13 +6,18 @@ transaction(itemID: UInt64) {
     execute {
         let itemCollection = LeofyNFT.getItemCollectionPublic()
         let item = itemCollection.borrowItem(itemID: itemID)
+
+
+        
         //let NFTItemCollection = item.borrowCollection()
         
         //destroy NFTItemCollection.withdraw(withdrawID: 0)
-
-        item.metadata["author"] = "Item name changed";
-
-        log(item.metadata)
+        let metadata = item.getMetadata()
+        metadata["author"] = "Item name changed";
+        log("START TEST")
+        log(itemCollection.getItemMetaDataByField(itemID: itemID, field: "author"))
+        let metadata2 = item.getMetadata()
+        log(metadata2)
 
 
     }
