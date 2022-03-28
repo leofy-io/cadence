@@ -33,10 +33,10 @@
 
 */
 
-import NonFungibleToken from "./standard/NonFungibleToken.cdc"
-import MetadataViews from "./standard/MetadataViews.cdc"
-import FungibleToken from "./standard/FungibleToken.cdc"
-import LeofyCoin from "./LeofyCoin.cdc"
+import NonFungibleToken from 0x1d7e57aa55817448
+import MetadataViews from 0x1d7e57aa55817448
+import FungibleToken from 0xf233dcee88fe0abe
+import LeofyCoin from 0x14af75b8c487333c
 
 pub contract LeofyNFT: NonFungibleToken {
 
