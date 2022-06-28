@@ -45,14 +45,21 @@ the core functionality of the NFT.
 | Network | Contract Address     |
 |---------|----------------------|
 | Testnet | `0xd3af09bdd3c94553` |
-| Mainnet | `TBA` |
+| Mainnet | `0x14af75b8c487333c` |
 
-`LeofyCoin.cdc`: This is the Leofy Fungible Token contract that allows will allow purchase NFT's
+`LeofyCoin.cdc`: This is the Leofy Fungible Token contract that allows purchase Leofy NFT's
 
 | Network | Contract Address     |
 |---------|----------------------|
 | Testnet | `0xd3af09bdd3c94553` |
-| Mainnet | `TBA` |
+| Mainnet | `0x14af75b8c487333c` |
+
+`LeofyMarketPlace.cdc`: This is the Leofy MarketPlace contract that allow users sells their NFT Collections. NFT can be placed for BidAuction or directly with the purcharsePrice.
+
+| Network | Contract Address     |
+|---------|----------------------|
+| Testnet | `0xd3af09bdd3c94553` |
+| Mainnet | `TBA`                |
 
 TBA: Soon we will launch a Marketplace Contract that will allow users to sell their NFTs.
 
@@ -135,6 +142,35 @@ in their account storage via their `Collection` object. The collection object
 contains a dictionary that stores the LeofyNFT and gives utility functions
 to move them in and out and to read data about the collection and its LeofyNFT.
 
+## Leofy Marketplace Contract Overview
+
+Leofy MarketPlace Contact, consist on a MarketPlaceCollection resource that contains a dictionary of MarketplaceItem. 
+```cadence
+pub resource MarketplaceCollection: MarketplaceCollectionPublic {
+    access(account) var marketplaceItems: @{UInt64: MarketplaceItem}
+    pub fun sellItem(...) -> Private Function
+    pub fun cancelAuction(_ id: UInt64) -> Private Function 
+    pub fun placeBid(...) -> Public Capability from MarketplaceCollectionPublic
+    pub fun placePurchase(...) -> Public Capability from MarketplaceCollectionPublic
+    pub fun getMarketplaceStatuses() -> Public Capability from MarketplaceCollectionPublic
+    pub fun getMarketplaceStatus(_ id:UInt64) -> Public Capability from MarketplaceCollectionPublic
+    pub fun settleAuction(...) -> Public Capability from MarketplaceCollectionPublic
+}
+```
+
+The other types that are defined in `LeofyMarketPlace` are as follows:
+- `MarketplaceItem`: A resource that contains the data of each Item that user want to sell. It contains the LeofyNFT.NFT (when user call a sellItem a new MarketplaceItem it's created and the NFT its moved here ). Also constains a FungibleToken.Vault used for Auctions and when user place a Bid deposited the Fungible tokens here.
+- `MarketplaceCollectionPublic`: An interface for the public capability for MarketplaceCollection.
+- `LeofyMarketPlaceAdmin`: A resource that the owner only will be the Account of the contract. It have the capability of change main contract variables like: cutPercentage, minimumBidIncrement, extendsTime, extendsWhenTimeLowerThan and marketplaceVault.
+
+The main idea of the contract it's to make a Capability to our users to sell their NFT's. 
+
+When user create their LeofyMarketPlace.MarketplaceCollection they can call to the sellItem and put the NFT's on this collections available for sell.
+
+There's two types of selling NFT's: 
+ - Purchase: Directly calling the 'placePurchase' function,  then it's checked that the vault.balance it's equal to the purchasePrice defined on the MarketplaceItem.
+ - Bid:  Directly calling the 'placeBid' function. Users have to place a higher Bid (previous Bid Vault will be returned to the last Bidder). When the BidTime it's expired the 'settleAuction' can be called to send de Vault to the Seller and send the NFT to the high Bidder. 
+
 
 ## How to Run Transactions Against the Leofy Contracts
 This repository contains sample transactions that can be executed against the Leofy contract either via Flow CLI or using VSCode. This section will describe how to create setup a public Collection  on the Flow emulator.
@@ -189,23 +225,21 @@ can be read from the real LeofyCoin contract deployed.
 NFT metadata is represented in a flexible and modular way using the [standard proposed in FLIP-0636](https://github.com/onflow/flow/blob/master/flips/20210916-nft-metadata.md). The LeofyNFT contract implements the [`MetadataViews.Resolver`](https://github.com/onflow/flow-nft/blob/master/contracts/MetadataViews.cdc#L21) interface, which standardizes the display of LeofyNFT in accordance with FLIP-0636. The LeofyNFT contract also defines a custom view of moment Item data called LeofyNFTMetadataView.
 
 
-## Leofy Marketplace
-
-Coming Soon. 
-
 ## License 
 
 The works in these folders 
 /leofy-io/cadence/blob/master/contracts/LeofyCoin.cdc 
-/leofy-io/cadence/blob/master/contracts/LeofyNFT.cdc 
+/leofy-io/cadence/blob/master/contracts/LeofyNFT.cdc
+/leofy-io/cadence/blob/master/contracts/LeofyMarketPlace.cdc
 
 are under the Unlicense
-https://github.com/leofy-oo/cadence/blob/master/LICENSE
+https://github.com/leofy-io/cadence/blob/master/LICENSE
 
 ## Inspiration 
 
 - NBA Top Shot: https://nbatopshot.com/
 - Viv3:  https://viv3.com/
+- Versus:  https://www.versus.auction/
 
 
 

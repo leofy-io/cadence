@@ -9,7 +9,7 @@ pub fun main(itemID: UInt64): {String: String} {
     
     //destroy NFTItemCollection.withdraw(withdrawID: 0)
 
-    return item.metadata
+    return item.getMetadata()
 
 
 }
