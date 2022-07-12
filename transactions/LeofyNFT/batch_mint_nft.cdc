@@ -21,7 +21,7 @@ transaction(
 
     execute {
         if self.itemCollection.items[itemID] != nil {
-            let itemRef = &self.itemCollection.items[itemID] as &LeofyNFT.Item
+            let itemRef = (&self.itemCollection.items[itemID] as &LeofyNFT.Item?)!
             itemRef.batchMintNFT(quantity: quantity)
         }
         else{

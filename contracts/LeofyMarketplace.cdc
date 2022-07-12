@@ -126,6 +126,10 @@ pub contract LeofyMarketPlace{
             ownerVaultCap: Capability<&{FungibleToken.Receiver}>,
             purchasePrice: UFix64
         ) {
+            pre {
+                ownerCollectionCap.check() == true: "Can't validate that the ownerCollectionCapability Exists"
+                ownerVaultCap.check() == true: "Can't validate that the ownerVaultCap Exists"
+            }
             LeofyMarketPlace.totalMarketPlaceItems = LeofyMarketPlace.totalMarketPlaceItems + (1 as UInt64)
             
             self.NFT <- NFT;
@@ -180,7 +184,7 @@ pub contract LeofyMarketPlace{
             }
         }
 
-        pub fun releasePreviousBid() {
+        access(contract) fun releasePreviousBid() {
             if let vaultCap = self.recipientVaultCap {
                 self.sendBidTokens(self.recipientVaultCap!)
                 return
@@ -219,13 +223,13 @@ pub contract LeofyMarketPlace{
             
         }
 
-        pub fun returnAuctionItemToOwner() {
+        access(contract) fun returnAuctionItemToOwner() {
             // release the bidder's tokens
             self.releasePreviousBid()
 
             // deposit the NFT into the owner's collection
             self.sendNFT(self.ownerCollectionCap)
-         }
+        }
 
         //this can be negative if is expired
         pub fun timeRemaining() : Fix64 {
@@ -257,7 +261,7 @@ pub contract LeofyMarketPlace{
         }
 
         //Extend an auction with a given set of blocks
-        pub fun extendWith(_ amount: UFix64) {
+        access(contract) fun extendWith(_ amount: UFix64) {
             self.auctionLength= self.auctionLength + amount
             emit DropExtended(tokenID: self.marketplaceID, owner: self.ownerCollectionCap.address, extendWith: amount, extendTo: self.auctionStartTime+self.auctionLength)
         }
@@ -436,7 +440,7 @@ pub contract LeofyMarketPlace{
             purchasePrice: UFix64
         ){
             pre {
-                 ( purchasePrice == 0.00 || purchasePrice > (startPrice + LeofyMarketPlace.minimumBidIncrement )):
+                 ( purchasePrice == 0.00 && auctionStartTime > 0.00 && auctionLength > 0.00 || purchasePrice > (startPrice + LeofyMarketPlace.minimumBidIncrement )):
                     "Purchase Price ("
                     .concat(purchasePrice.toString())
                     .concat(") must be higher than startPrice (")
@@ -564,6 +568,9 @@ pub contract LeofyMarketPlace{
     // Only owner of this resource object can call this function
     pub resource LeofyMarketPlaceAdmin {
         pub fun changePercentage(_ cutPercentage: UFix64){
+            pre {
+                 cutPercentage >= 0.00 && cutPercentage <= 100.00: "Cut percentage must be between 0 and 100"
+            }
             LeofyMarketPlace.cutPercentage = cutPercentage
         }
 
@@ -580,7 +587,10 @@ pub contract LeofyMarketPlace{
         }
 
         pub fun changeMarketplaceVault(_ marketplaceVault: Capability<&{FungibleToken.Receiver}>){
-            LeofyMarketPlace.marketplaceVault = marketplaceVault
+           pre {
+                marketplaceVault.check() == true: "Can't validate that the marketplaceVault Exists"
+           }
+           LeofyMarketPlace.marketplaceVault = marketplaceVault
         }
     }
 

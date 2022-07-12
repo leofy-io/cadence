@@ -26,7 +26,7 @@ transaction(itemID: UInt64) {
             ?? panic("Could not borrow a reference to the receiver's collection")    
 
         let itemCollection = LeofyNFT.getItemCollectionPublic()
-        self.item = itemCollection.borrowItem(itemID: itemID)
+        self.item = itemCollection.borrowItem(itemID: itemID)!
         
         // Withdraw tokens from the signer's stored vault
         self.sentVault <- vaultRef.withdraw(amount: self.item.price)
