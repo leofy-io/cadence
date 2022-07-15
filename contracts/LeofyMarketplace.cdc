@@ -1,6 +1,6 @@
-import FungibleToken from "./standard/FungibleToken.cdc"
-import LeofyNFT from "./LeofyNFT.cdc"
-import LeofyCoin from "./LeofyCoin.cdc"
+import FungibleToken from 0x1d7e57aa55817448
+import LeofyNFT from 0x14af75b8c487333c
+import LeofyCoin from 0x14af75b8c487333c
 
 pub contract LeofyMarketPlace{
 
