@@ -15,8 +15,8 @@ transaction(recipient: Address, itemID: UInt64, withdrawID: UInt64) {
 
     execute{
         if self.itemCollection.items[itemID] != nil {
-            let itemRef = &self.itemCollection.items[itemID] as &LeofyNFT.Item
-            let collection = &itemRef.NFTsCollection as &LeofyNFT.Collection
+            let itemRef = &self.itemCollection.items[itemID] as &LeofyNFT.Item?
+            let collection = &itemRef?.NFTsCollection as &LeofyNFT.Collection?
 
             // borrow a public reference to the receivers collection
             let recipient = getAccount(recipient)
@@ -25,10 +25,16 @@ transaction(recipient: Address, itemID: UInt64, withdrawID: UInt64) {
                 .borrow<&{NonFungibleToken.CollectionPublic}>()
                 ?? panic("Could not borrow a reference to the receiver's collection")
 
-            let nft <- collection.withdraw(withdrawID: withdrawID)
+            let nft <- collection?.withdraw(withdrawID: withdrawID)!
             
             //Deposit the NFT in the recipient's collection
-            depositRef.deposit(token: <-nft)
+            if nft != nil {
+                depositRef.deposit(token: <-nft)
+            }
+            else{
+                panic("NFT not exists, cannot deposit")
+            }
+            
         }
         else{
             panic("Item not exists")
