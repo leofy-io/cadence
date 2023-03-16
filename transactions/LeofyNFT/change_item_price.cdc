@@ -19,7 +19,7 @@ transaction(itemID: UInt64, price: UFix64) {
     }
 
     execute {
-        let item = &self.itemCollection.items[itemID] as &LeofyNFT.Item
+        let item = (&self.itemCollection.items[itemID] as &LeofyNFT.Item?)!
 		item.setPrice(price: price)
 		
     }
